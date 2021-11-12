@@ -1,2 +1,2 @@
 # voxboxor
-This Python library implements some Minetest-compatible block world features.
+This Python module implements some Minetest-compatible block world features.
