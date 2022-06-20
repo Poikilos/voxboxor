@@ -48,7 +48,6 @@ from enum import Enum
 
 U32_MAX = 0xFFFFFFFF
 
-
 def is_yes(s):
     if s.lower() == "y":
         return True
@@ -56,6 +55,10 @@ def is_yes(s):
         return True
     return False
 
+# Regarding converting from symbolic (string-represented) values to
+# real (Python-typed) values: See also mtanalyze/minebest
+#   in https://github.com/poikilos/mtanalyze (name_types,
+#   get_conf_value, symbol_to_value, symbol_to_tuple).
 
 class ValueType(Enum):
     VALUETYPE_STRING = 0

@@ -21,18 +21,40 @@
 voxboxor: module for using Minetest data and protocols
 '''
 from __future__ import print_function
+from __future__ import division
 import sys
+import os
+import platform
 
-def error(*args):
-    if len(args) > 1:
-        raise NotImplementedError("multiple args in error function")
-    elif len(args) > 0:
-        sys.stderr.write("{}\n".format(args[0]))
-    else:
-        sys.stderr.write("\n")
-    sys.stderr.flush()
+# see <https://stackoverflow.com/questions/5574702/how-to-print-to-stderr-in-python>
+verbosity = 0
+for argI in range(1, len(sys.argv)):
+    arg = sys.argv[argI]
+    if arg.startswith("--"):
+        if arg == "--verbose":
+            verbosity = 1
+        elif arg == "--debug":
+            verbosity = 2
 
-import from voxboxor.settings import Settings
+def set_verbosity(verbosity_level):
+    global verbosity
+    verbosity = verbosity_level
+
+
+def echo0(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
+
+def echo1(*args, **kwargs):
+    if verbosity < 1:
+        return
+    print(*args, file=sys.stderr, **kwargs)
+
+def echo2(*args, **kwargs):
+    if verbosity < 2:
+        return
+    print(*args, file=sys.stderr, **kwargs)
+
+from voxboxor.settings import Settings
 
 
 myPath = os.path.realpath(__file__)
@@ -80,5 +102,5 @@ else:
 
 
 if __name__ == '__main__':
-    error()
-    error("This is a module not an executable script.")
+    echo0()
+    echo0("This is a module not an executable script.")

@@ -28,10 +28,10 @@ import platform
 import json
 
 from voxboxor import (
-    error,
+    echo0,
 )
 
-UPM = 10.0  # (unused, hard-coded instead) Engine units per game meter
+UPM = 10.0  # (unused, hard-coded for speed) Engine units per game meter
 
 # TODO: crafts (scrape list of ingredients to remove from inventory)
 
@@ -89,5 +89,5 @@ def mt_to_irr(mt_pos):
 
 
 if __name__ == '__main__':
-    error()
-    error("This is a module not an executable script.")
+    echo0()
+    echo0("This is a module not an executable script.")
