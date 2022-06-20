@@ -29,11 +29,18 @@ if not os.path.isdir(testDataPath):
 
 
 class DummyServer():
+    PEER_ID_FIRST = 2
+    # 0 and 1 are not allowed (0 is PEER_ID_INEXISTENT)
 
     def __init__(self):
         self.server_client_ids = []
-        self.new_client_id = 2
-        # 0 and 1 are not allowed (0 is PEER_ID_INEXISTENT)
+        self.new_client_id = DummyServer.PEER_ID_FIRST
+
+    def _peek_client_id(self):
+        new_client_id = self.new_client_id
+        while new_client_id in self.server_client_ids:
+            new_client_id += 1
+        return new_client_id
 
     def generate_client_id(self):
         while self.new_client_id in self.server_client_ids:
@@ -66,9 +73,16 @@ class DummyServer():
                 "".format(server_connected_len,
                           len(server_connected_bytes))
             )
+        self.server_client_ids.append(values['peer_id_new'])
         return server_connected_bytes
 
     def client_disconnect_packet(self, values):
+        sender_peer_id = values.get('sender_peer_id')
+        if sender_peer_id is not None:
+            if sender_peer_id not in self.server_client_ids:
+                raise ValueError("Client peer ID {} is not connected."
+                                 "".format(sender_peer_id))
+        # else get_packet_bytes will raise the error.
         client_disconnect_bytes = get_packet_bytes(
             "client",
             "disconnect",
@@ -81,6 +95,7 @@ class DummyServer():
                 "".format(client_disconnect_len,
                           len(client_disconnect_bytes))
             )
+        self.server_client_ids.remove(sender_peer_id)
         return client_disconnect_bytes
 
 
@@ -98,6 +113,10 @@ class TestConnection(TestCase):
         s_packet = bytes_to_packet('server', 'connected',
                                    server_connected_bytes)
         values = {}
+        echo0("connected to offline {}".format(type(server).__name__))
+        echo0("server.server_client_ids={}"
+              "".format(server.server_client_ids))
+        ex_good = False
         try:
             client_disconnect_bytes = \
                 server.client_disconnect_packet(values)
@@ -106,11 +125,58 @@ class TestConnection(TestCase):
                     and ("sender_peer_id" in str(ex))):
                 echo0("* sender_peer_id is required for disconnect"
                       " (test is ok)")
+                ex_good = True
                 # The non-failing state is tested next.
             else:
                 raise ex
         # ^ Should raise: "ValueError: Constructing a client disconnect
         #   packet requires values to have the keys with no default:
         #   ['sender_peer_id']"
+        if not ex_good:
+            raise RuntimeError(
+                "A packet shouldn't be constructed with"
+                " sender_peer_id=None (default should be None)"
+            )
+
+        bad_id = server._peek_client_id()
+
+        values['sender_peer_id'] = bad_id
+        ex_good = False
+        try:
+            client_disconnect_bytes = server.client_disconnect_packet(values)
+        except ValueError as ex:
+            if "not connected" in str(ex):
+                echo0("* _peek_client_id {} is not connected"
+                      " (test is ok)".format(bad_id))
+                ex_good = True
+            else:
+                raise ex
+        # ^ Should raise ValueError (client not connected)
+        if not ex_good:
+            raise RuntimeError(
+                "Disconnect shouldn't work with peer_id not logged in"
+            )
+
         values['sender_peer_id'] = s_packet.get('peer_id_new')
+        echo0("values['sender_peer_id']={}"
+              "".format(values['sender_peer_id']))
+        echo0("server.server_client_ids={}"
+              "".format(server.server_client_ids))
         client_disconnect_bytes = server.client_disconnect_packet(values)
+
+        ex_good = False
+        try:
+            values['sender_peer_id'] = s_packet.get('peer_id_new')
+            client_disconnect_bytes = server.client_disconnect_packet(values)
+        except ValueError as ex:
+            if (("not connected" in str(ex))
+                    and (" "+str(values['sender_peer_id'])+" " in str(ex))):
+                echo0("* _peek_client_id {} is disconnected"
+                      " (test is ok)".format(bad_id))
+                ex_good = True
+        # ^ Should raise ValueError (already disconnected)
+        if not ex_good:
+            raise RuntimeError(
+                "Disconnect shouldn't work with peer_id {}"
+                " already disconnected".format(values['sender_peer_id'])
+            )

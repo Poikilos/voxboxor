@@ -78,9 +78,11 @@ def _get_aspect(packet_category, key, aspect):
         this_key = '*'
         aspects = catdef['*']
     if aspect not in aspects:
+        '''
         echo2("- using * since there is no aspect {} for aspects for catdef of key"
               " {}"
               "".format(aspect, key))
+        '''
         this_key = '*'
         aspects = catdef['*']
     if aspect not in aspects:
@@ -104,10 +106,12 @@ def to_c_like(name, value):
                 # Get everything else based on values.
                 c_types = _get_aspect(category, key, 'types')
                 names = _get_aspect(category, key, 'names')
-                echo2("")
-                echo2("{} {} values={}".format(category, key, values))
-                echo2("{} {} c_types={}".format(category, key, c_types))
-                echo2("{} {} names={}".format(category, key, names))
+                # echo2("")
+                # echo2("{} {} values={}".format(category, key,
+                #                                values))
+                # echo2("{} {} c_types={}".format(category, key,
+                #                                 c_types))
+                # echo2("{} {} names={}".format(category, key, names))
                 for i in range(len(names)):
                     known_name = names[i]
                     if known_name == name:
