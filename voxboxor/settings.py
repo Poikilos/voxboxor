@@ -48,13 +48,6 @@ from enum import Enum
 
 U32_MAX = 0xFFFFFFFF
 
-def is_yes(s):
-    if s.lower() == "y":
-        return True
-    if s.lower() == "yes":
-        return True
-    return False
-
 # Regarding converting from symbolic (string-represented) values to
 # real (Python-typed) values: See also mtanalyze/minebest
 #   in https://github.com/poikilos/mtanalyze (name_types,
