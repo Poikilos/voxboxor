@@ -36,6 +36,7 @@ for argI in range(1, len(sys.argv)):
         elif arg == "--debug":
             verbosity = 2
 
+
 def set_verbosity(verbosity_level):
     global verbosity
     verbosity = verbosity_level
@@ -77,11 +78,13 @@ user_excluded_mod_count = 0
 
 profile_path = None
 appdata_path = None
+sysdirs = {}
 if "windows" in platform.system().lower():
     if 'USERPROFILE' in os.environ:
         profile_path = os.environ['USERPROFILE']
         appdatas_path = os.path.join(profile_path, "AppData")
         appdata_path = os.path.join(appdatas_path, "Local")
+        sysdirs['caches'] = os.path.join(appdatas_path, "Local")
     else:
         raise ValueError("ERROR: The USERPROFILE variable is missing"
                          " though platform.system() is {}."
@@ -90,12 +93,18 @@ else:
     if 'HOME' in os.environ:
         profile_path = os.environ['HOME']
         appdata_path = os.path.join(profile_path, ".config")
+        sysdirs['caches'] = os.path.join(profile_path, ".cache")
     else:
         raise ValueError("ERROR: The HOME variable is missing"
                          " though the platform {} is not Windows."
                          "".format(platform.system()))
 
+luid = 'voxboxor'  # Locally-unique identifier
+# (LUID should be unique among names of packages on various distros)
 
+mydirs = {
+    'cache': os.path.join(sysdirs['caches'], luid)
+}
 
 # settings = Settings()
 
