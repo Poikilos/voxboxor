@@ -45,9 +45,16 @@ class TabOnline(tk.Frame):
 
         self.urlLabel = ttk.Label(root, text="List server:")
         self.urlLabel.grid(row=self.row, column=0)
+
         self.urlVar = tk.StringVar(root)
         self.urlEntry = ttk.Entry(textvariable=self.urlVar)
         self.urlEntry.grid(row=self.row, column=1)
+        # self.urlVar.trace("w", lambda name, index, mode, sv=self.urlVar: callback(sv))
+        if sys.version_info.major >= 3:
+            self.urlVar.trace_add("write", lambda name, index, mode, sv=self.urlVar: self.on_load(quiet=True))
+        else:
+            self.urlVar.trace("w", lambda name, index, mode, sv=self.urlVar: self.on_load(quiet=True))
+
         self.refreshBtn = ttk.Button(root, text="Refresh",
                                      command=self.refresh)
         self.refreshBtn.grid(row=self.row, column=2)
@@ -58,15 +65,16 @@ class TabOnline(tk.Frame):
 
         self.root.after(100, self.on_load)
 
-    def on_load(self):
-        serverlistmgr.set_masterserver_domain(self.urlVar.get())
+    def on_load(self, quiet=False):
+        serverlistmgr.set_masterserver_domain(self.urlVar.get(), quiet=quiet)
         if serverlistmgr.servers:
             self._load_list({
                 'status': "done",
                 'used_cache': True,
             })
         else:
-            logger.warning("No servers were loaded.")
+            if not quiet:
+                logger.warning("No servers were loaded.")
 
     def clear(self):
         for widget in self.server_widgets:

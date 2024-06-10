@@ -26,24 +26,28 @@ class ServerListMgr:
         self.downloaded_cb = None
         self._busy = False
 
-    def set_masterserver_domain(self, domain):
+    def set_masterserver_domain(self, domain, quiet=False):
         self._domain = domain
-        url = self.get_url()
+        url = self.get_url(quiet=quiet)
         path = self._list_path(url)
         if os.path.isfile(path):
             self._load_list(path)
         else:
-            logger.warning("There is no cached {} for url {}"
-                           .format(path, url))
+            if not quiet:
+                logger.warning(
+                    "There is no cached {} for url {}"
+                    .format(path, url))
 
-    def get_url(self):
+    def get_url(self, quiet=False):
         url = self._domain
         if not url.lower().startswith("http"):
             if not url.lower().startswith("servers."):
-                logger.warning("Prepending servers. automatically.")
+                if not quiet:
+                    logger.warning("Prepending servers. automatically.")
                 url = "servers." + url
             if "/" not in url:
-                logger.warning("Appending list.json automatially.")
+                if not quiet:
+                    logger.warning("Appending list.json automatially.")
                 url += "/list.json"
             url = "https://" + url
         return url
