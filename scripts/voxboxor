@@ -1,0 +1,13 @@
+import os
+import sys
+SCRIPTS_DIR = os.path.dirname(os.path.realpath(__file__))
+
+REPO_DIR = os.path.dirname(SCRIPTS_DIR)
+
+if __name__ == "__main__":
+    sys.path.insert(0, REPO_DIR)
+
+from bakedin.mainmenu.tab_online import main
+
+if __name__ == "__main__":
+    sys.exit(main())
